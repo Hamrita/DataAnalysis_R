@@ -23,10 +23,20 @@ This proceeds until all principal components are computed. The elements $\phi_{1
 
 Therefore, to calculate principal components, we start by using the `cov()` function to calculate the covariance matrix, followed by the `eigen` command to calculate the eigenvalues of the matrix. `eigen` produces an object that contains both the ordered eigenvalues (`values`) and the corresponding eigenvector matrix (`vectors`).
 
+## Preparing Our Data {#preparing}
+It is usually beneficial for each variable to be centered at zero for PCA, due to the fact that it makes comparing each principal component to the mean straightforward. This also eliminates potential problems with the scale of each variable.
+
+```{r, comment=NA}
+data=read.table("http://hamrita.e-monsite.com/medias/files/datatd1.txt",h=T)
+# centering data
+data_c=apply(data, 2, scale)
+```
+ Then, we calculate the eigen values and eigen vectors of the covariance matrix of scaled data
+
 ```{r, comment=NA}
 data=read.table("http://hamrita.e-monsite.com/medias/files/datatd1.txt",h=T)
 # calculate the covariance matrix
-cov_mat=cov(data)
+cov_mat=cov(data_c)
 cov_mat
 # eigen values and vectors
 eig=eigen(cov_mat)
@@ -52,3 +62,74 @@ phi
 ```
 
 Each principal component vector defines a direction in feature space. Because eigenvectors are orthogonal to every other eigenvector, loadings and, therefore, principal components are uncorrelated with one another, and form a basis of the new space. This holds true no matter how many dimensions are being used.
+
+If we project the n data points $x_1, ..., x_n$ onto the first eigenvector, the projected values are called the principal component scores for each observation.
+
+```{r, comment= NA}
+# Calculate Principal Components scores
+PC1 <- as.matrix(data_c) %*% phi[,1]
+PC2 <- as.matrix(data_c) %*% phi[,2]
+
+# Create data frame with Principal Components scores
+PC <- data.frame(grad = row.names(data), PC1, PC2)
+PC
+```
+
+Now that we've calculated the first and second principal components. 
+
+```{r, comment= NA}
+# Plot Principal Components for each State
+library(ggplot2)
+ggplot(PC, aes(PC1, PC2)) + 
+  modelr::geom_ref_line(h = 0) +
+  modelr::geom_ref_line(v = 0) +
+  geom_text(aes(label = grad), size = 3) +
+  xlab("First Principal Component") + 
+  ylab("Second Principal Component") + 
+  ggtitle("First Two Principal Components of Data")
+```
+
+Because PCA is unsupervised, this analysis on its own is not making predictions,  but simply making connections between observations using fewer measurements.
+
+## Selecting the Number of Principal Components {#selecting}
+Note that in the above analysis we only looked at two of the four principal components. How did we know to use two principal components? And how well is the data explained by these two principal components compared to using the full data set?
+
+### The Proportion of Variance Explained
+We mentioned previously that PCA reduces the dimensionality while explaining most of the variability, but there is a more technical method for measuring exactly what percentage of the variance was retained in these principal components.
+
+By performing some algebra, the proportion of variance explained (PVE) by the mth principal component is calculated using the equation:
+
+$$PVE = \frac{\sum^n_{i=1}(\sum^p_{j=1}\phi_{jm}x_{ij})^2}{\sum^p_{j=1}\sum^n_{i=1}x^2_{ij}} \tag{3}$$
+
+It can be shown that the PVE of the mth principal component can be more simply calculated by taking the mth eigenvalue and dividing it by the number of principal components, p. A vector of PVE for each principal component is calculated:
+
+```{r, comment= NA}
+PVE <- eig$values / sum(eig$values)
+round(PVE, 2)
+```
+
+The first principal component in our example therefore explains 88% of the variability, and the second principal component explains 9%. Together, the first two principal components explain 97% of the variability.
+
+It is often advantageous to plot the PVE and cumulative PVE, for reasons explained in the following section of this tutorial. The plot of each is shown below:
+
+```{r, comment= NA}
+# PVE (aka scree) plot
+library(ggplot2); library(gridExtra)
+PVEplot <- qplot(c(1:8), PVE) + 
+  geom_line() + 
+  xlab("Principal Component") + 
+  ylab("PVE") +
+  ggtitle("Scree Plot") +
+  ylim(0, 1)
+
+# Cumulative PVE plot
+cumPVE <- qplot(c(1:8), cumsum(PVE)) + 
+  geom_line() + 
+  xlab("Principal Component") + 
+  ylab(NULL) + 
+  ggtitle("Cumulative Scree Plot") +
+  ylim(0,1)
+
+grid.arrange(PVEplot, cumPVE, ncol = 2)
+```
+

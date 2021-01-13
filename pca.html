@@ -321,79 +321,153 @@ $(document).ready(function () {
 <p><span class="math display">\[Z_{2} = \phi_{12}X_{1} + \phi_{22}X_{2} + ... + \phi_{p2}X_{p} \tag{2}\]</span></p>
 <p>This proceeds until all principal components are computed. The elements <span class="math inline">\(\phi_{11}, ..., \phi_{p1}\)</span> in Eq. 1 are the loadings of the first principal component. To calculate these loadings, we must find the <span class="math inline">\(\phi\)</span> vector that maximizes the variance. It can be shown using techniques from linear algebra that the eigenvector corresponding to the largest eigenvalue of the covariance matrix is the set of loadings that explains the greatest proportion of the variability.</p>
 <p>Therefore, to calculate principal components, we start by using the <code>cov()</code> function to calculate the covariance matrix, followed by the <code>eigen</code> command to calculate the eigenvalues of the matrix. <code>eigen</code> produces an object that contains both the ordered eigenvalues (<code>values</code>) and the corresponding eigenvector matrix (<code>vectors</code>).</p>
+</div>
+<div id="preparing" class="section level2">
+<h2>Preparing Our Data</h2>
+<p>It is usually beneficial for each variable to be centered at zero for PCA, due to the fact that it makes comparing each principal component to the mean straightforward. This also eliminates potential problems with the scale of each variable.</p>
+<pre class="r"><code>data=read.table(&quot;http://hamrita.e-monsite.com/medias/files/datatd1.txt&quot;,h=T)
+# centering data
+data_c=apply(data, 2, scale)</code></pre>
+<p>Then, we calculate the eigen values and eigen vectors of the covariance matrix of scaled data</p>
 <pre class="r"><code>data=read.table(&quot;http://hamrita.e-monsite.com/medias/files/datatd1.txt&quot;,h=T)
 # calculate the covariance matrix
-cov_mat=cov(data)
+cov_mat=cov(data_c)
 cov_mat</code></pre>
-<pre><code>           PAO        PAA        VIO        VIA         POT        LEC        RAI
-PAO  778.69643 -68.696429 1002.55357 -791.55357  144.196429  70.053571 -103.58929
-PAA  -68.69643  10.125000  -74.55357   90.12500   -8.339286  -6.053571   13.58929
-VIO 1002.55357 -74.553571 1504.69643 -911.26786  157.910714  86.767857 -115.58929
-VIA -791.55357  90.125000 -911.26786  980.69643 -103.196429 -74.196429  128.87500
-POT  144.19643  -8.339286  157.91071 -103.19643   61.982143  13.410714  -14.37500
-LEC   70.05357  -6.053571   86.76786  -74.19643   13.410714   7.982143  -10.37500
-RAI -103.58929  13.589286 -115.58929  128.87500  -14.375000 -10.375000   19.83929
-PLP -292.48214  30.053571 -393.33929  276.05357  -53.410714 -25.982143   45.51786
+<pre><code>           PAO        PAA        VIO        VIA        POT        LEC        RAI
+PAO  1.0000000 -0.7736643  0.9261878 -0.9057929  0.6563525  0.8885594 -0.8334273
+PAA -0.7736643  1.0000000 -0.6040133  0.9044415 -0.3328879 -0.6733710  0.9588178
+VIO  0.9261878 -0.6040133  1.0000000 -0.7501607  0.5170754  0.7917256 -0.6690062
+VIA -0.9057929  0.9044415 -0.7501607  1.0000000 -0.4185661 -0.8386021  0.9239285
+POT  0.6563525 -0.3328879  0.5170754 -0.4185661  1.0000000  0.6029189 -0.4099317
+LEC  0.8885594 -0.6733710  0.7917256 -0.8386021  0.6029189  1.0000000 -0.8244519
+RAI -0.8334273  0.9588178 -0.6690062  0.9239285 -0.4099317 -0.8244519  1.0000000
+PLP -0.8558457  0.7712209 -0.8279862  0.7197908 -0.5539561 -0.7509231  0.8344475
            PLP
-PAO -292.48214
-PAA   30.05357
-VIO -393.33929
-VIA  276.05357
-POT  -53.41071
-LEC  -25.98214
-RAI   45.51786
-PLP  149.98214</code></pre>
+PAO -0.8558457
+PAA  0.7712209
+VIO -0.8279862
+VIA  0.7197908
+POT -0.5539561
+LEC -0.7509231
+RAI  0.8344475
+PLP  1.0000000</code></pre>
 <pre class="r"><code># eigen values and vectors
 eig=eigen(cov_mat)
 # eigen values
 eig$values</code></pre>
-<pre><code>[1]  3.098178e+03  3.045501e+02  6.832742e+01  3.891328e+01  2.177913e+00
-[6]  1.798098e+00  5.499796e-02 -6.242087e-14</code></pre>
+<pre><code>[1]  6.207947e+00  8.796814e-01  4.159611e-01  3.064547e-01  1.684415e-01
+[6]  1.806771e-02  3.446769e-03 -7.882727e-17</code></pre>
 <pre class="r"><code># eigen vectors
 eig$vectors</code></pre>
-<pre><code>            [,1]        [,2]        [,3]        [,4]        [,5]         [,6]
-[1,]  0.49620433  0.07179730  0.41531263 -0.21176361  0.50145201 -0.348907023
-[2,] -0.04441498 -0.08797802 -0.01010388 -0.16631180  0.07305318 -0.549259255
-[3,]  0.66688264 -0.62631447 -0.32322116 -0.05811364 -0.17134455  0.142572588
-[4,] -0.50851371 -0.75919940  0.23983253  0.02556384  0.11704665 -0.122939069
-[5,]  0.07949412 -0.04589115  0.72969435 -0.35323426 -0.36673475  0.359817462
-[6,]  0.04442889  0.02140562  0.04788865 -0.02256738 -0.60706626 -0.639876625
-[7,] -0.06654125 -0.10769038 -0.04537611 -0.22705332  0.43821989  0.001775213
-[8,] -0.18912681  0.06549857 -0.35863020 -0.86407691 -0.07134247  0.047152413
-             [,7]        [,8]
-[1,]  0.012269729 -0.39743834
-[2,] -0.581727939  0.56311241
-[3,] -0.021710860  0.07064959
-[4,]  0.002534035 -0.27935028
-[5,] -0.043227623  0.26175330
-[6,]  0.460532919 -0.06857956
-[7,]  0.665988179  0.54293900
-[8,] -0.058862762 -0.27187963</code></pre>
+<pre><code>           [,1]        [,2]        [,3]        [,4]       [,5]        [,6]
+[1,]  0.3913106 -0.13782295  0.16171408  0.11934962 -0.2940454  0.39774771
+[2,] -0.3486743 -0.44058521  0.31994973  0.21790900  0.2654417  0.52070420
+[3,]  0.3491929 -0.20168213  0.68063176 -0.02888337 -0.2457165 -0.46475199
+[4,] -0.3736251 -0.26030922  0.07348235 -0.39654491  0.3456048 -0.42286619
+[5,]  0.2463714 -0.74382646 -0.55765980 -0.07399153 -0.1757252 -0.10774663
+[6,]  0.3648220 -0.12802133  0.03240104  0.51888931  0.6691919 -0.18494157
+[7,] -0.3730515 -0.32597990  0.25424981  0.06370633 -0.2715323  0.01626466
+[8,] -0.3616760  0.05022725 -0.16169177  0.70810300 -0.3329142 -0.36024492
+            [,7]        [,8]
+[1,] -0.10692002  0.72896315
+[2,]  0.42307943 -0.11777262
+[3,]  0.25392333 -0.18012990
+[4,]  0.03334541  0.57500037
+[5,]  0.09342846 -0.13544943
+[6,] -0.31310737  0.01273521
+[7,] -0.76590350 -0.15895192
+[8,]  0.22496593  0.21885081</code></pre>
 <p>For our example, we’ll take the first two sets of loadings and store them in the matrix <code>phi</code></p>
 <pre class="r"><code>(phi=eig$vectors[,1:2])</code></pre>
-<pre><code>            [,1]        [,2]
-[1,]  0.49620433  0.07179730
-[2,] -0.04441498 -0.08797802
-[3,]  0.66688264 -0.62631447
-[4,] -0.50851371 -0.75919940
-[5,]  0.07949412 -0.04589115
-[6,]  0.04442889  0.02140562
-[7,] -0.06654125 -0.10769038
-[8,] -0.18912681  0.06549857</code></pre>
+<pre><code>           [,1]        [,2]
+[1,]  0.3913106 -0.13782295
+[2,] -0.3486743 -0.44058521
+[3,]  0.3491929 -0.20168213
+[4,] -0.3736251 -0.26030922
+[5,]  0.2463714 -0.74382646
+[6,]  0.3648220 -0.12802133
+[7,] -0.3730515 -0.32597990
+[8,] -0.3616760  0.05022725</code></pre>
 <p>Eigenvectors that are calculated in any software package are unique up to a sign flip. By default, eigenvectors in R point in the negative direction. For this example, we’d prefer the eigenvectors point in the positive direction because it leads to more logical interpretation of graphical results as we’ll see shortly. To use the positive-pointing vector, we multiply the default loadings by <span class="math inline">\(-1\)</span>. The set of loadings for the first principal component (PC1) and second principal component (PC2) are shown below:</p>
 <pre class="r"><code>phi=-phi
 colnames(phi)=c(&quot;PC1&quot;, &quot;PC2&quot;)
 phi</code></pre>
-<pre><code>             PC1         PC2
-[1,] -0.49620433 -0.07179730
-[2,]  0.04441498  0.08797802
-[3,] -0.66688264  0.62631447
-[4,]  0.50851371  0.75919940
-[5,] -0.07949412  0.04589115
-[6,] -0.04442889 -0.02140562
-[7,]  0.06654125  0.10769038
-[8,]  0.18912681 -0.06549857</code></pre>
+<pre><code>            PC1         PC2
+[1,] -0.3913106  0.13782295
+[2,]  0.3486743  0.44058521
+[3,] -0.3491929  0.20168213
+[4,]  0.3736251  0.26030922
+[5,] -0.2463714  0.74382646
+[6,] -0.3648220  0.12802133
+[7,]  0.3730515  0.32597990
+[8,]  0.3616760 -0.05022725</code></pre>
 <p>Each principal component vector defines a direction in feature space. Because eigenvectors are orthogonal to every other eigenvector, loadings and, therefore, principal components are uncorrelated with one another, and form a basis of the new space. This holds true no matter how many dimensions are being used.</p>
+<p>If we project the n data points <span class="math inline">\(x_1, ..., x_n\)</span> onto the first eigenvector, the projected values are called the principal component scores for each observation.</p>
+<pre class="r"><code># Calculate Principal Components scores
+PC1 &lt;- as.matrix(data_c) %*% phi[,1]
+PC2 &lt;- as.matrix(data_c) %*% phi[,2]
+
+# Create data frame with Principal Components scores
+PC &lt;- data.frame(grad = row.names(data), PC1, PC2)
+PC</code></pre>
+<pre><code>  grad        PC1         PC2
+1 AGRI -3.1538232 -0.22993989
+2 SAAG -3.2942597 -0.41850307
+3 PRIN  1.3769588  0.05473497
+4 CSUP  4.0772714  0.16473285
+5 CMOY  1.6071145 -0.80132031
+6 EMPL  0.7544441 -0.75630756
+7 OUVR -0.8410311 -0.17121742
+8 INAC -0.5266749  2.15782043</code></pre>
+<p>Now that we’ve calculated the first and second principal components.</p>
+<pre class="r"><code># Plot Principal Components for each State
+library(ggplot2)
+ggplot(PC, aes(PC1, PC2)) + 
+  modelr::geom_ref_line(h = 0) +
+  modelr::geom_ref_line(v = 0) +
+  geom_text(aes(label = grad), size = 3) +
+  xlab(&quot;First Principal Component&quot;) + 
+  ylab(&quot;Second Principal Component&quot;) + 
+  ggtitle(&quot;First Two Principal Components of Data&quot;)</code></pre>
+<p><img src="pca_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>Because PCA is unsupervised, this analysis on its own is not making predictions, but simply making connections between observations using fewer measurements.</p>
+</div>
+<div id="selecting" class="section level2">
+<h2>Selecting the Number of Principal Components</h2>
+<p>Note that in the above analysis we only looked at two of the four principal components. How did we know to use two principal components? And how well is the data explained by these two principal components compared to using the full data set?</p>
+<div id="the-proportion-of-variance-explained" class="section level3">
+<h3>The Proportion of Variance Explained</h3>
+<p>We mentioned previously that PCA reduces the dimensionality while explaining most of the variability, but there is a more technical method for measuring exactly what percentage of the variance was retained in these principal components.</p>
+<p>By performing some algebra, the proportion of variance explained (PVE) by the mth principal component is calculated using the equation:</p>
+<p><span class="math display">\[PVE = \frac{\sum^n_{i=1}(\sum^p_{j=1}\phi_{jm}x_{ij})^2}{\sum^p_{j=1}\sum^n_{i=1}x^2_{ij}} \tag{3}\]</span></p>
+<p>It can be shown that the PVE of the mth principal component can be more simply calculated by taking the mth eigenvalue and dividing it by the number of principal components, p. A vector of PVE for each principal component is calculated:</p>
+<pre class="r"><code>PVE &lt;- eig$values / sum(eig$values)
+round(PVE, 2)</code></pre>
+<pre><code>[1] 0.78 0.11 0.05 0.04 0.02 0.00 0.00 0.00</code></pre>
+<p>The first principal component in our example therefore explains 88% of the variability, and the second principal component explains 9%. Together, the first two principal components explain 97% of the variability.</p>
+<p>It is often advantageous to plot the PVE and cumulative PVE, for reasons explained in the following section of this tutorial. The plot of each is shown below:</p>
+<pre class="r"><code># PVE (aka scree) plot
+library(ggplot2); library(gridExtra)
+PVEplot &lt;- qplot(c(1:8), PVE) + 
+  geom_line() + 
+  xlab(&quot;Principal Component&quot;) + 
+  ylab(&quot;PVE&quot;) +
+  ggtitle(&quot;Scree Plot&quot;) +
+  ylim(0, 1)
+
+# Cumulative PVE plot
+cumPVE &lt;- qplot(c(1:8), cumsum(PVE)) + 
+  geom_line() + 
+  xlab(&quot;Principal Component&quot;) + 
+  ylab(NULL) + 
+  ggtitle(&quot;Cumulative Scree Plot&quot;) +
+  ylim(0,1)
+
+grid.arrange(PVEplot, cumPVE, ncol = 2)</code></pre>
+<pre><code>Warning: Removed 1 rows containing missing values (geom_point).</code></pre>
+<pre><code>Warning: Removed 1 row(s) containing missing values (geom_path).</code></pre>
+<p><img src="pca_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+</div>
 </div>
 
 
