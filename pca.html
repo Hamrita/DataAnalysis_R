@@ -467,7 +467,7 @@ ggplot(PC, aes(PC1, PC2)) +
 round(PVE, 2)</code></pre>
 <pre><code>[1] 0.78 0.11 0.05 0.04 0.02 0.00 0.00 0.00</code></pre>
 <p>The first principal component in our example therefore explains 78% of the variability, and the second principal component explains 11%. Together, the first two principal components explain 89% of the variability.</p>
-<p>It is often advantageous to plot the PVE and cumulative PVE, for reasons explained in the following section of this tutorial. The plot of each is shown below:</p>
+<p>It is often advantageous to plot the PVE and cumulative PVE, for reasons explained in the following section of this course. The plot of each is shown below:</p>
 <pre class="r"><code># PVE (aka scree) plot
 library(ggplot2); library(gridExtra)
 PVEplot &lt;- qplot(c(1:8), PVE) + 

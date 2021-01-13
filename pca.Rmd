@@ -114,7 +114,7 @@ round(PVE, 2)
 
 The first principal component in our example therefore explains 78% of the variability, and the second principal component explains 11%. Together, the first two principal components explain 89% of the variability.
 
-It is often advantageous to plot the PVE and cumulative PVE, for reasons explained in the following section of this tutorial. The plot of each is shown below:
+It is often advantageous to plot the PVE and cumulative PVE, for reasons explained in the following section of this course. The plot of each is shown below:
 
 ```{r, comment= NA}
 # PVE (aka scree) plot
