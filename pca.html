@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Principal component analysis</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Data Analysis</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About Me</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Course
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="pca.html">Principal component analysis</a>
+    </li>
+    <li>
+      <a href="da.html">Linear Discriminant Analysis</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Principal component analysis</h1>
+
+</div>
+
+
+<p>Principal Component Analysis (PCA) involves the process by which principal components are computed, and their role in understanding the data. PCA is an unsupervised approach, which means that it is performed on a set of variables <span class="math inline">\(X_1\)</span>, <span class="math inline">\(X_2\)</span>, …, <span class="math inline">\(X_p\)</span> with no associated response <span class="math inline">\(Y\)</span>. PCA reduces the dimensionality of the data set, allowing most of the variability to be explained using fewer variables. PCA is commonly used as one step in a series of analyses. You can use PCA to reduce the number of variables and avoid multicollinearity, or when you have too many predictors relative to the number of observations.</p>
+<div id="what" class="section level2">
+<h2>What are Principal Components?</h2>
+<p>The goal of PCA is to explain most of the variability in the data with a smaller number of variables than the original data set. For a large data set with <span class="math inline">\(p\)</span> variables, we could examine pairwise plots of each variable against every other variable, but even for moderate <span class="math inline">\(p\)</span>, the number of these plots becomes excessive and not useful. For example, when <span class="math inline">\(p = 10\)</span> there are <span class="math inline">\(p(p-1)/2 = 45\)</span> scatterplots that could be analyzed! Clearly, a better method is required to visualize the n observations when p is large. In particular, we would like to find a low-dimensional representation of the data that captures as much of the information as possible. For instance, if we can obtain a two-dimensional representation of the data that captures most of the information, then we can plot the observations in this low-dimensional space.</p>
+<p>PCA provides a tool to do just this. It finds a low-dimensional representation of a data set that contains as much of the variation as possible. The idea is that each of the n observations lives in p-dimensional space, but not all of these dimensions are equally interesting. PCA seeks a small number of dimensions that are as interesting as possible, where the concept of interesting is measured by the amount that the observations vary along each dimension. Each of the dimensions found by PCA is a linear combination of the p features and we can take these linear combinations of the measurements and reduce the number of plots necessary for visual analysis while retaining most of the information present in the data.</p>
+<p>We now explain the manner in which these dimensions, or principal components, are found.</p>
+<p>The first principal component of a data set <span class="math inline">\(X_1, X_2, ..., X_p\)</span> is the linear combination of the features</p>
+<p><span class="math display">\[Z_{1} = \phi_{11}X_{1} + \phi_{21}X_{2} + ... + \phi_{p1}X_{p} \tag{1}\]</span></p>
+<p>that has the largest variance and where <span class="math inline">\(\phi_1\)</span> is the first principal component loading vector, with elements <span class="math inline">\(\phi_{12}, \phi_{22}, \dots, \phi_{p2}\)</span>. The <span class="math inline">\(\phi\)</span> are normalized, which means that <span class="math inline">\(\sum_{j=1}^{p}{\phi_{j1}^{2}} = 1\)</span>. After the first principal component <span class="math inline">\(Z_1\)</span> of the features has been determined, we can find the second principal component <span class="math inline">\(Z_2\)</span>. The second principal component is the linear combination of <span class="math inline">\(X_1,\dots , X_p\)</span> that has maximal variance out of all linear combinations that are uncorrelated with <span class="math inline">\(Z_1\)</span>. The second principal component scores <span class="math display">\[z_{12}, z_{22}, \dots, z_{n2}\]</span> take the form</p>
+<p><span class="math display">\[Z_{2} = \phi_{12}X_{1} + \phi_{22}X_{2} + ... + \phi_{p2}X_{p} \tag{2}\]</span></p>
+<p>This proceeds until all principal components are computed. The elements <span class="math inline">\(\phi_{11}, ..., \phi_{p1}\)</span> in Eq. 1 are the loadings of the first principal component. To calculate these loadings, we must find the <span class="math inline">\(\phi\)</span> vector that maximizes the variance. It can be shown using techniques from linear algebra that the eigenvector corresponding to the largest eigenvalue of the covariance matrix is the set of loadings that explains the greatest proportion of the variability.</p>
+<p>Therefore, to calculate principal components, we start by using the <code>cov()</code> function to calculate the covariance matrix, followed by the <code>eigen</code> command to calculate the eigenvalues of the matrix. <code>eigen</code> produces an object that contains both the ordered eigenvalues (<code>values</code>) and the corresponding eigenvector matrix (<code>vectors</code>).</p>
+<pre class="r"><code>data=read.table(&quot;http://hamrita.e-monsite.com/medias/files/datatd1.txt&quot;,h=T)
+# calculate the covariance matrix
+cov_mat=cov(data)
+cov_mat</code></pre>
+<pre><code>           PAO        PAA        VIO        VIA         POT        LEC        RAI
+PAO  778.69643 -68.696429 1002.55357 -791.55357  144.196429  70.053571 -103.58929
+PAA  -68.69643  10.125000  -74.55357   90.12500   -8.339286  -6.053571   13.58929
+VIO 1002.55357 -74.553571 1504.69643 -911.26786  157.910714  86.767857 -115.58929
+VIA -791.55357  90.125000 -911.26786  980.69643 -103.196429 -74.196429  128.87500
+POT  144.19643  -8.339286  157.91071 -103.19643   61.982143  13.410714  -14.37500
+LEC   70.05357  -6.053571   86.76786  -74.19643   13.410714   7.982143  -10.37500
+RAI -103.58929  13.589286 -115.58929  128.87500  -14.375000 -10.375000   19.83929
+PLP -292.48214  30.053571 -393.33929  276.05357  -53.410714 -25.982143   45.51786
+           PLP
+PAO -292.48214
+PAA   30.05357
+VIO -393.33929
+VIA  276.05357
+POT  -53.41071
+LEC  -25.98214
+RAI   45.51786
+PLP  149.98214</code></pre>
+<pre class="r"><code># eigen values and vectors
+eig=eigen(cov_mat)
+# eigen values
+eig$values</code></pre>
+<pre><code>[1]  3.098178e+03  3.045501e+02  6.832742e+01  3.891328e+01  2.177913e+00
+[6]  1.798098e+00  5.499796e-02 -6.242087e-14</code></pre>
+<pre class="r"><code># eigen vectors
+eig$vectors</code></pre>
+<pre><code>            [,1]        [,2]        [,3]        [,4]        [,5]         [,6]
+[1,]  0.49620433  0.07179730  0.41531263 -0.21176361  0.50145201 -0.348907023
+[2,] -0.04441498 -0.08797802 -0.01010388 -0.16631180  0.07305318 -0.549259255
+[3,]  0.66688264 -0.62631447 -0.32322116 -0.05811364 -0.17134455  0.142572588
+[4,] -0.50851371 -0.75919940  0.23983253  0.02556384  0.11704665 -0.122939069
+[5,]  0.07949412 -0.04589115  0.72969435 -0.35323426 -0.36673475  0.359817462
+[6,]  0.04442889  0.02140562  0.04788865 -0.02256738 -0.60706626 -0.639876625
+[7,] -0.06654125 -0.10769038 -0.04537611 -0.22705332  0.43821989  0.001775213
+[8,] -0.18912681  0.06549857 -0.35863020 -0.86407691 -0.07134247  0.047152413
+             [,7]        [,8]
+[1,]  0.012269729 -0.39743834
+[2,] -0.581727939  0.56311241
+[3,] -0.021710860  0.07064959
+[4,]  0.002534035 -0.27935028
+[5,] -0.043227623  0.26175330
+[6,]  0.460532919 -0.06857956
+[7,]  0.665988179  0.54293900
+[8,] -0.058862762 -0.27187963</code></pre>
+<p>For our example, we’ll take the first two sets of loadings and store them in the matrix <code>phi</code></p>
+<pre class="r"><code>(phi=eig$vectors[,1:2])</code></pre>
+<pre><code>            [,1]        [,2]
+[1,]  0.49620433  0.07179730
+[2,] -0.04441498 -0.08797802
+[3,]  0.66688264 -0.62631447
+[4,] -0.50851371 -0.75919940
+[5,]  0.07949412 -0.04589115
+[6,]  0.04442889  0.02140562
+[7,] -0.06654125 -0.10769038
+[8,] -0.18912681  0.06549857</code></pre>
+<p>Eigenvectors that are calculated in any software package are unique up to a sign flip. By default, eigenvectors in R point in the negative direction. For this example, we’d prefer the eigenvectors point in the positive direction because it leads to more logical interpretation of graphical results as we’ll see shortly. To use the positive-pointing vector, we multiply the default loadings by <span class="math inline">\(-1\)</span>. The set of loadings for the first principal component (PC1) and second principal component (PC2) are shown below:</p>
+<pre class="r"><code>phi=-phi
+colnames(phi)=c(&quot;PC1&quot;, &quot;PC2&quot;)
+phi</code></pre>
+<pre><code>             PC1         PC2
+[1,] -0.49620433 -0.07179730
+[2,]  0.04441498  0.08797802
+[3,] -0.66688264  0.62631447
+[4,]  0.50851371  0.75919940
+[5,] -0.07949412  0.04589115
+[6,] -0.04442889 -0.02140562
+[7,]  0.06654125  0.10769038
+[8,]  0.18912681 -0.06549857</code></pre>
+<p>Each principal component vector defines a direction in feature space. Because eigenvectors are orthogonal to every other eigenvector, loadings and, therefore, principal components are uncorrelated with one another, and form a basis of the new space. This holds true no matter how many dimensions are being used.</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

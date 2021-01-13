@@ -1,0 +1,54 @@
+---
+title: "Principal component analysis"
+---
+
+Principal Component Analysis (PCA) involves the process by which principal components are computed, and their role in understanding the data. PCA is an unsupervised approach, which means that it is performed on a set of variables $X_1$, $X_2$, ..., $X_p$ with no associated response $Y$. PCA reduces the dimensionality of the data set, allowing most of the variability to be explained using fewer variables. PCA is commonly used as one step in a series of analyses. You can use PCA to reduce the number of variables and avoid multicollinearity, or when you have too many predictors relative to the number of observations.
+
+## What are Principal Components? {#what}
+The goal of PCA is to explain most of the variability in the data with a smaller number of variables than the original data set. For a large data set with $p$ variables, we could examine pairwise plots of each variable against every other variable, but even for moderate $p$, the number of these plots becomes excessive and not useful. For example, when $p = 10$ there are $p(p-1)/2 = 45$ scatterplots that could be analyzed! Clearly, a better method is required to visualize the n observations when p is large. In particular, we would like to find a low-dimensional representation of the data that captures as much of the information as possible. For instance, if we can obtain a two-dimensional representation of the data that captures most of the information, then we can plot the observations in this low-dimensional space.
+
+PCA provides a tool to do just this. It finds a low-dimensional representation of a data set that contains as much of the variation as possible. The idea is that each of the n observations lives in p-dimensional space, but not all of these dimensions are equally interesting. PCA seeks a small number of dimensions that are as interesting as possible, where the concept of interesting is measured by the amount that the observations vary along each dimension. Each of the dimensions found by PCA is a linear combination of the p features and we can take these linear combinations of the measurements and reduce the number of plots necessary for visual analysis while retaining most of the information present in the data.
+
+We now explain the manner in which these dimensions, or principal components, are found.
+
+The first principal component of a data set $X_1, X_2, ..., X_p$ is the linear combination of the features
+
+$$Z_{1} = \phi_{11}X_{1} + \phi_{21}X_{2} + ... + \phi_{p1}X_{p} \tag{1}$$
+
+that has the largest variance and where $\phi_1$ is the first principal component loading vector, with elements $\phi_{12}, \phi_{22}, \dots, \phi_{p2}$. The $\phi$ are normalized, which means that $\sum_{j=1}^{p}{\phi_{j1}^{2}} = 1$. After the first principal component $Z_1$ of the features has been determined, we can find the second principal component $Z_2$. The second principal component is the linear combination of $X_1,\dots , X_p$ that has maximal variance out of all linear combinations that are uncorrelated with $Z_1$. The second principal component scores $$z_{12}, z_{22}, \dots, z_{n2}$$ take the form
+
+$$Z_{2} = \phi_{12}X_{1} + \phi_{22}X_{2} + ... + \phi_{p2}X_{p} \tag{2}$$
+
+This proceeds until all principal components are computed. The elements $\phi_{11}, ..., \phi_{p1}$ in Eq. 1 are the loadings of the first principal component. To calculate these loadings, we must find the $\phi$ vector that maximizes the variance. It can be shown using techniques from linear algebra that the eigenvector corresponding to the largest eigenvalue of the covariance matrix is the set of loadings that explains the greatest proportion of the variability.
+
+Therefore, to calculate principal components, we start by using the `cov()` function to calculate the covariance matrix, followed by the `eigen` command to calculate the eigenvalues of the matrix. `eigen` produces an object that contains both the ordered eigenvalues (`values`) and the corresponding eigenvector matrix (`vectors`).
+
+```{r, comment=NA}
+data=read.table("http://hamrita.e-monsite.com/medias/files/datatd1.txt",h=T)
+# calculate the covariance matrix
+cov_mat=cov(data)
+cov_mat
+# eigen values and vectors
+eig=eigen(cov_mat)
+# eigen values
+eig$values
+# eigen vectors
+eig$vectors
+```
+
+For our example, we'll take the first two sets of loadings and store them in the matrix `phi`
+
+```{r, comment= NA}
+(phi=eig$vectors[,1:2])
+```
+
+Eigenvectors that are calculated in any software package are unique up to a sign flip. By default, eigenvectors in R point in the negative direction. For this example, we'd prefer the eigenvectors point in the positive direction because it leads to more logical interpretation of graphical results as we'll see shortly. To use the positive-pointing vector, we multiply the default loadings by $-1$. The set of loadings for the first principal component (PC1) and second principal component (PC2) are shown below:
+
+```{r, comment= NA}
+phi=-phi
+colnames(phi)=c("PC1", "PC2")
+phi
+
+```
+
+Each principal component vector defines a direction in feature space. Because eigenvectors are orthogonal to every other eigenvector, loadings and, therefore, principal components are uncorrelated with one another, and form a basis of the new space. This holds true no matter how many dimensions are being used.

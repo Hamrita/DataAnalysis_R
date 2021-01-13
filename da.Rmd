@@ -1,0 +1,7 @@
+---
+title: "Linear Discriminant Analysis"
+---
+
+The purpose of principal component analysis is to find the best low-dimensional representation of the variation in a multivariate data set. For example, in the wine data set, we have 13 chemical concentrations describing wine samples from three cultivars. By carrying out a principal component analysis, we found that most of the variation in the chemical concentrations between the samples can be captured using the first two principal components, where each of the principal components is a particular linear combination of the 13 chemical concentrations.
+
+The purpose of linear discriminant analysis (LDA) is to find the linear combinations of the original variables that gives the best possible separation between the groups. Linear discriminant analysis is also known as "canonical discriminant analysis", or simply "discriminant analysis".
