@@ -2,4 +2,10 @@
 title: "Data Analysis"
 ---
 
-Hello, World!
+Course's description
+
+```{r, echo=FALSE, fig.align='center', fig.width=7, fig.height= 5}
+library(ggfortify)
+df <- iris[c(1, 2, 3, 4)]
+autoplot(prcomp(df), data = iris, colour = 'Species')
+```

@@ -13,4 +13,9 @@ navbar:
           href: pca.html
         - text: "Linear Discriminant Analysis"
           href: da.html
-       
+        - text: "Factor Analysis"
+          href: fa.html
+output:
+  html_document:
+    theme: cosmo
+    highlight: textmate
